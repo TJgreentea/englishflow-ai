@@ -3,11 +3,13 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const db = require("./db/connection");
+const vocabularyRoutes = require("./routes/vocabularyRoutes");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/vocabulary", vocabularyRoutes);
 
 app.get("/", (req, res) => {
   res.send("EnglishFlow AI API Running");

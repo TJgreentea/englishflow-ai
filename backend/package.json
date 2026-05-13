@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "fetch:cet4": "node scripts/fetchCet4Words.js",
+    "import:cet4": "node scripts/importCet4Words.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
