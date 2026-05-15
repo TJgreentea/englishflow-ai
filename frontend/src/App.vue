@@ -45,8 +45,19 @@ const fetchWordDetail = async (id) => {
   }
 
   try {
-    const response = await fetch(`http://localhost:5052/api/vocabulary/${id}`)
+    const response = await fetch(`http://localhost:5052/api/vocabulary/${id}/family-group`)
     const result = await response.json()
+
+    if (response.status === 404) {
+      wordDetails.value = {
+        ...wordDetails.value,
+        [id]: {
+          group: null,
+          members: [],
+        },
+      }
+      return
+    }
 
     if (!response.ok || !result.success) {
       throw new Error(result.message || 'Failed to load word detail')
@@ -126,18 +137,22 @@ onMounted(fetchWords)
           <span v-else-if="detailErrors[item.id]" class="back-error">
             {{ detailErrors[item.id] }}
           </span>
-          <span v-else-if="wordDetails[item.id]?.families?.length" class="family-list">
+          <span v-else-if="wordDetails[item.id]?.members?.length" class="family-list">
+            <span v-if="wordDetails[item.id].group" class="family-summary">
+              {{ wordDetails[item.id].group.family_name }}
+            </span>
             <span
-              v-for="family in wordDetails[item.id].families"
-              :key="family.id"
+              v-for="member in wordDetails[item.id].members"
+              :key="member.id"
               class="family-item"
+              :class="{ current: member.word_id === item.id }"
             >
               <span class="family-word">
-                {{ family.family_group }}
-                <span>{{ family.is_in_cet4 ? 'CET-4' : '扩展' }}</span>
+                {{ member.word }}
+                <span>{{ member.role }}</span>
               </span>
-              <span class="family-meaning">{{ family.family_meaning }}</span>
-              <span class="family-relation">{{ family.relation_explanation }}</span>
+              <span class="family-meaning">{{ member.meaning }}</span>
+              <span class="family-relation">{{ member.relation_explanation }}</span>
             </span>
           </span>
           <span v-else class="back-status">暂无词族内容</span>
@@ -327,10 +342,24 @@ button:disabled {
   gap: 12px;
 }
 
+.family-summary {
+  display: block;
+  color: #172033;
+  font-size: 14px;
+  font-weight: 800;
+}
+
 .family-item {
   display: block;
   padding-bottom: 12px;
   border-bottom: 1px solid #e2e8f0;
+}
+
+.family-item.current {
+  padding: 10px;
+  border: 1px solid #b8d7da;
+  border-radius: 6px;
+  background: #eef8f8;
 }
 
 .family-item:last-child {

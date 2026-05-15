@@ -140,11 +140,31 @@ const getDailyWords = async (req, res) => {
       `
         SELECT ${wordFields}
         FROM words
-        ORDER BY id ASC
+        WHERE difficulty_level = 1
+          AND id IN (
+            SELECT DISTINCT word_id
+            FROM word_family_members
+          )
+        ORDER BY RAND()
         LIMIT ?
       `,
       [count],
     );
+
+    if (dailyWords.length < count) {
+      const [fallbackWords] = await db.query(
+        `
+        SELECT ${wordFields}
+        FROM words
+        WHERE difficulty_level = 1
+        ORDER BY RAND()
+        LIMIT ?
+      `,
+        [count],
+      );
+
+      dailyWords.push(...fallbackWords.slice(0, count - dailyWords.length));
+    }
 
     res.json({
       success: true,
